@@ -1,4 +1,113 @@
-// -------- CALCULO NUMEROS PRIMOS --------
+const readline = require("readline/promises");
+
+const entrada = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+async function main() {
+  let opcao = -1;
+
+  while (opcao !== 0) {
+    mostrarMenu();
+    opcao = await lerInteiro("Opção: ");
+    console.log();
+
+    switch (opcao) {
+      case 1:
+        await opcaoPrimo();
+        break;
+      case 2:
+        await opcaoSoma();
+        break;
+      case 3:
+        await opcaoFibonacci();
+        break;
+      case 4:
+        await opcaoMdc();
+        break;
+      case 5:
+        await opcaoOrdenar();
+        break;
+      case 6:
+        await opcaoContar();
+        break;
+      case 0:
+        console.log("Até mais.");
+        break;
+      default:
+        console.log("Opção inválida. Escolha um número de 0 a 6.");
+    }
+  }
+
+  entrada.close();
+}
+
+function mostrarMenu() {
+  console.log();
+  console.log("==================================");
+  console.log("            ALGORITMOS            ");
+  console.log("==================================");
+  console.log("  1 - Verificar se é primo");
+  console.log("  2 - Somar uma lista");
+  console.log("  3 - Fibonacci");
+  console.log("  4 - Máximo divisor comum");
+  console.log("  5 - Ordenar uma lista");
+  console.log("  6 - Contar dentro de um intervalo");
+  console.log("  0 - Sair");
+  console.log("==================================");
+}
+
+// Cada opção pede os valores e chama o algoritmo correspondente.
+
+async function opcaoPrimo() {
+  const numero = await lerInteiro("Número: ");
+
+  if (ehPrimo(numero)) {
+    console.log(numero + " é primo.");
+  } else {
+    console.log(numero + " não é primo.");
+  }
+}
+
+async function opcaoSoma() {
+  const numeros = await lerLista("Números separados por espaço: ");
+  console.log("Soma = " + somar(numeros));
+}
+
+async function opcaoFibonacci() {
+  const n = await lerInteiro("Até qual posição (0 a 78)? ");
+
+  if (n < 0 || n > 78) {
+    console.log("Acima de 78 o resultado perde precisão.");
+    return;
+  }
+
+  for (let i = 0; i <= n; i++) {
+    console.log("Fibonacci(" + i + ") = " + fibonacci(i));
+  }
+}
+
+async function opcaoMdc() {
+  const a = await lerInteiro("Primeiro número: ");
+  const b = await lerInteiro("Segundo número: ");
+  console.log("MDC(" + a + ", " + b + ") = " + mdc(a, b));
+}
+
+async function opcaoOrdenar() {
+  const numeros = await lerLista("Números separados por espaço: ");
+  console.log("Ordenado: " + quicksort(numeros).join(", "));
+}
+
+async function opcaoContar() {
+  const numeros = await lerLista("Números separados por espaço: ");
+  const minimo = await lerInteiro("Valor mínimo: ");
+  const maximo = await lerInteiro("Valor máximo: ");
+  console.log("Quantidade entre " + minimo + " e " + maximo + ": " + contar(numeros, minimo, maximo));
+}
+
+// Algoritmos
+
 function ehPrimo(numero) {
   if (numero < 2) {
     return false;
@@ -13,13 +122,6 @@ function ehPrimo(numero) {
   return true;
 }
 
-const numerosPrimo = [1, 2, 3, 4, 17, 20, 29];
-for (const n of numerosPrimo) {
-  console.log(n + " é primo? " + ehPrimo(n));
-}
-// ------ FIM ------
-
-// -------- SOMATORIO --------
 function somar(numeros) {
   let soma = 0;
 
@@ -30,11 +132,6 @@ function somar(numeros) {
   return soma;
 }
 
-const valores = [10, 20, 30, 40, 50];
-console.log("Soma: " + somar(valores));
-// ------ FIM ------
-
-// -------- FIBONACCI --------
 function fibonacci(n) {
   if (n === 0) {
     return 0;
@@ -56,12 +153,6 @@ function fibonacci(n) {
   return atual;
 }
 
-for (let n = 0; n <= 10; n++) {
-  console.log("Fibonacci(" + n + ") = " + fibonacci(n));
-}
-// ------ FIM ------
-
-// -------- MAXIMO DIVISOR COMUM --------
 function mdc(a, b) {
   while (b !== 0) {
     const resto = a % b;
@@ -72,11 +163,6 @@ function mdc(a, b) {
   return a;
 }
 
-console.log("MDC(48, 18) = " + mdc(48, 18));
-console.log("MDC(101, 10) = " + mdc(101, 10));
-// ------ FIM ------
-
-// -------- ORDENACAO QUICKSORT --------
 function quicksort(array) {
   if (array.length <= 1) {
     return array;
@@ -100,25 +186,7 @@ function quicksort(array) {
   return quicksort(menores).concat(iguais, quicksort(maiores));
 }
 
-const desordenado = [5, 3, 8, 1, 9, 2, 7];
-console.log("Ordenado: " + quicksort(desordenado));
-// ------ FIM ------
-
-// -------- CONTAGEM --------
-function contar(numeros) {
-  const n = numeros.length;
-  const primeiro = numeros[0];
-  let minimo;
-  let maximo;
-
-  if (primeiro < n) {
-    minimo = primeiro;
-    maximo = n;
-  } else {
-    minimo = n;
-    maximo = primeiro;
-  }
-
+function contar(numeros, minimo, maximo) {
   let contagem = 0;
 
   for (const valor of numeros) {
@@ -130,7 +198,32 @@ function contar(numeros) {
   return contagem;
 }
 
-const dados = [3, 5, 1, 8, 4, 2, 6, 7];
-console.log("N = " + dados.length);
-console.log("Quantidade entre " + dados[0] + " e " + dados.length + ": " + contar(dados));
-// ------ FIM ------
+// Leitura do teclado. Repete a pergunta enquanto a resposta não for válida.
+
+async function lerInteiro(mensagem) {
+  while (true) {
+    const texto = (await entrada.question(mensagem)).trim();
+    const numero = Number(texto);
+
+    if (texto !== "" && Number.isInteger(numero)) {
+      return numero;
+    }
+
+    console.log("Digite um número inteiro.");
+  }
+}
+
+async function lerLista(mensagem) {
+  while (true) {
+    const texto = (await entrada.question(mensagem)).trim();
+    const numeros = texto.split(/\s+/).map(Number);
+
+    if (texto !== "" && numeros.every(Number.isInteger)) {
+      return numeros;
+    }
+
+    console.log("Digite apenas números inteiros separados por espaço.");
+  }
+}
+
+main();
