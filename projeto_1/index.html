@@ -1,377 +1,727 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-lang="javascript">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Laboratório de Algoritmos</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    // Aplica o tema antes da primeira pintura para evitar flash.
+    (function () {
+      var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      try {
+        var saved = localStorage.getItem("theme");
+        if (saved) dark = saved === "dark";
+      } catch (e) {}
+      document.documentElement.classList.toggle("dark", dark);
+    })();
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Geist", "ui-sans-serif", "system-ui", "sans-serif"],
+            mono: ['"Geist Mono"', "ui-monospace", "SFMono-Regular", "monospace"]
+          },
+          colors: {
+            background: "hsl(var(--background) / <alpha-value>)",
+            foreground: "hsl(var(--foreground) / <alpha-value>)",
+            card: "hsl(var(--card) / <alpha-value>)",
+            muted: "hsl(var(--muted) / <alpha-value>)",
+            "muted-foreground": "hsl(var(--muted-foreground) / <alpha-value>)",
+            border: "hsl(var(--border) / <alpha-value>)",
+            input: "hsl(var(--input) / <alpha-value>)",
+            lang: "hsl(var(--lang) / <alpha-value>)"
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
   <style>
     :root {
-      --ink: #17212b;
-      --muted: #64727e;
-      --paper: #f8f5ef;
-      --panel: #fffdf9;
-      --line: #ddd8ce;
-      --accent: #d65a3a;
-      --accent-dark: #a83d27;
-      --teal: #167c80;
-      --shadow: 0 18px 50px rgba(38, 35, 28, 0.12);
+      --background: 210 20% 98%;
+      --foreground: 222 30% 10%;
+      --card: 0 0% 100%;
+      --muted: 214 20% 94%;
+      --muted-foreground: 215 14% 40%;
+      --border: 214 18% 88%;
+      --input: 214 18% 84%;
     }
 
-    * {
-      box-sizing: border-box;
+    .dark {
+      --background: 224 25% 7%;
+      --foreground: 210 20% 96%;
+      --card: 224 22% 10%;
+      --muted: 222 18% 15%;
+      --muted-foreground: 215 12% 66%;
+      --border: 222 16% 18%;
+      --input: 222 16% 24%;
     }
+
+    /* A cor de destaque acompanha a linguagem escolhida. */
+    [data-lang="javascript"] { --lang: 43 96% 50%; }
+    [data-lang="java"] { --lang: 212 82% 52%; }
+
+    /* As classes utilitárias de display não podem anular o atributo hidden. */
+    [hidden] { display: none !important; }
 
     body {
-      min-height: 100vh;
-      margin: 0;
-      color: var(--ink);
-      background: var(--paper);
-      font-family: Georgia, "Times New Roman", serif;
+      background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+      background-size: 22px 22px;
+      background-attachment: fixed;
+      -webkit-font-smoothing: antialiased;
     }
 
-    body::before {
+    .page-glow {
       position: fixed;
-      inset: 0;
+      inset: 0 0 auto 0;
       z-index: -1;
-      content: "";
-      opacity: 0.35;
-      background-image: radial-gradient(#c9c1b2 0.8px, transparent 0.8px);
-      background-size: 18px 18px;
-      mask-image: linear-gradient(to bottom, black, transparent 75%);
+      height: 640px;
+      pointer-events: none;
+      background:
+        radial-gradient(55% 90% at 50% 0%, hsl(var(--lang) / 0.42), transparent 72%),
+        radial-gradient(90% 120% at 50% -10%, hsl(var(--lang) / 0.2), transparent 75%);
+      transition: background 300ms ease;
     }
 
-    .page {
-      width: min(1080px, calc(100% - 40px));
-      margin: 0 auto;
-      padding: 56px 0 64px;
+    .chip-in {
+      animation: chip-in 280ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
     }
 
-    .masthead {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 24px;
-      margin-bottom: 38px;
+    @keyframes chip-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
     }
 
-    .eyebrow {
-      margin: 0 0 10px;
-      color: var(--accent-dark);
-      font: 700 0.78rem/1.2 Arial, sans-serif;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      max-width: 680px;
-      margin: 0;
-      font-size: clamp(2.5rem, 7vw, 5rem);
-      line-height: 0.95;
-      letter-spacing: -0.04em;
-      font-weight: 700;
-    }
-
-    .intro {
-      max-width: 260px;
-      margin: 0;
-      color: var(--muted);
-      font: 0.98rem/1.5 Arial, sans-serif;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-      gap: 22px;
-    }
-
-    .panel {
-      padding: 28px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      box-shadow: var(--shadow);
-    }
-
-    .panel h2 {
-      margin: 0 0 6px;
-      font-size: 1.55rem;
-    }
-
-    .panel-subtitle {
-      margin: 0 0 24px;
-      color: var(--muted);
-      font: 0.88rem/1.45 Arial, sans-serif;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font: 700 0.78rem/1.2 Arial, sans-serif;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    select,
-    input {
-      width: 100%;
-      min-height: 48px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      color: var(--ink);
-      background: #fff;
-      font: 1rem/1.2 Arial, sans-serif;
-    }
-
-    select:focus,
-    input:focus {
-      outline: 3px solid rgba(22, 124, 128, 0.18);
-      border-color: var(--teal);
-    }
-
-    .field {
-      margin-bottom: 20px;
-    }
-
-    .field-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .hint {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font: 0.78rem/1.4 Arial, sans-serif;
-    }
-
-    button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 50px;
-      margin-top: 4px;
-      border: 0;
-      border-radius: 4px;
-      color: #fff;
-      background: var(--accent);
-      cursor: pointer;
-      font: 700 0.9rem/1 Arial, sans-serif;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      transition: background 160ms ease, transform 160ms ease;
-    }
-
-    button:hover {
-      background: var(--accent-dark);
-      transform: translateY(-1px);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    .result-panel {
-      display: flex;
-      flex-direction: column;
-      min-height: 430px;
-    }
-
-    .result-panel h2 {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .status {
-      color: var(--teal);
-      font: 700 0.7rem/1.2 Arial, sans-serif;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    #result {
-      display: flex;
-      flex: 1;
-      align-items: center;
-      justify-content: center;
-      min-height: 260px;
-      padding: 24px;
-      border: 1px dashed #c9c1b2;
-      border-radius: 4px;
-      color: var(--muted);
-      background: #faf8f3;
-      text-align: center;
-      font: 1rem/1.6 Arial, sans-serif;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    #result.has-result {
-      color: var(--ink);
-      font-size: 1.25rem;
-    }
-
-    .error {
-      color: #a83d27 !important;
-    }
-
-    .footer-note {
-      margin: 18px 0 0;
-      color: var(--muted);
-      font: 0.78rem/1.4 Arial, sans-serif;
-    }
-
-    @media (max-width: 760px) {
-      .page {
-        width: min(100% - 28px, 600px);
-        padding-top: 34px;
-      }
-
-      .masthead,
-      .workspace {
-        display: block;
-      }
-
-      .intro {
-        max-width: none;
-        margin-top: 18px;
-      }
-
-      .panel + .panel {
-        margin-top: 16px;
-      }
-
-      .panel {
-        padding: 22px;
-      }
-    }
-
-    @media (max-width: 420px) {
-      .field-row {
-        grid-template-columns: 1fr;
-        gap: 0;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      .chip-in { animation: none; }
+      * { transition-duration: 0.01ms !important; }
     }
   </style>
 </head>
-<body>
-  <main class="page">
-    <header class="masthead">
-      <div>
-        <p class="eyebrow">Projeto 1 · JavaScript</p>
-        <h1>Laboratório de algoritmos</h1>
-      </div>
-      <p class="intro">Escolha uma operação, informe os dados e veja o resultado calculado no navegador.</p>
-    </header>
+<body class="min-h-screen bg-background font-sans text-foreground antialiased">
+  <div class="page-glow" aria-hidden="true"></div>
 
-    <section class="workspace" aria-label="Executar algoritmos">
-      <form class="panel" id="algorithm-form">
-        <h2>Executar</h2>
-        <p class="panel-subtitle">Os mesmos algoritmos do arquivo JavaScript, agora com entradas interativas.</p>
+  <button id="theme-toggle" type="button" aria-label="Alternar tema claro e escuro"
+    class="fixed right-4 top-4 z-20 grid h-9 w-9 place-items-center rounded-md border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lang sm:right-6 sm:top-5">
+    <i data-lucide="moon" class="h-4 w-4 dark:hidden"></i>
+    <i data-lucide="sun" class="hidden h-4 w-4 dark:block"></i>
+  </button>
 
-        <div class="field">
-          <label for="algorithm">Algoritmo</label>
-          <select id="algorithm" name="algorithm">
-            <option value="prime">Verificar número primo</option>
-            <option value="sum">Somatório</option>
-            <option value="fibonacci">Fibonacci</option>
-            <option value="gcd">Máximo divisor comum</option>
-            <option value="quicksort">Ordenação Quicksort</option>
-            <option value="count">Contagem</option>
-          </select>
+  <main class="mx-auto w-full max-w-6xl px-4 pb-16 pt-16 sm:px-6 sm:pt-20">
+    <section class="mb-10 max-w-2xl">
+      <p class="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        <span class="h-2 w-2 rounded-full bg-lang"></span> JavaScript e Java
+      </p>
+      <h1 class="text-3xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+        O mesmo algoritmo, <span class="text-muted-foreground">em duas linguagens.</span>
+      </h1>
+      <p class="mt-4 text-base leading-relaxed text-muted-foreground">
+        Escolha a linguagem, o algoritmo e os dados. Compare resultados, inclusive onde o <span class="font-mono text-sm text-foreground">int</span> do Java e o <span class="font-mono text-sm text-foreground">Number</span> do JavaScript se comportam de forma diferente.
+      </p>
+    </section>
+
+    <div class="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
+      <!-- Configuração -->
+      <form id="algorithm-form" class="h-fit rounded-xl border border-border bg-card shadow-sm" novalidate>
+        <div class="space-y-1.5 border-b border-border p-6">
+          <h2 class="text-base font-semibold tracking-tight">Configuração</h2>
+          <p class="text-sm text-muted-foreground">Defina o que será executado.</p>
         </div>
 
-        <div id="inputs"></div>
-        <button type="submit">Executar algoritmo <span aria-hidden="true">→</span></button>
+        <div class="space-y-5 p-6">
+          <div class="space-y-2">
+            <span class="text-sm font-medium" id="language-label">Linguagem</span>
+            <div role="radiogroup" aria-labelledby="language-label" class="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+              <button type="button" role="radio" data-language="javascript" aria-checked="true"
+                class="flex h-9 items-center justify-center gap-2 rounded-md text-sm font-medium text-muted-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lang aria-checked:bg-card aria-checked:text-foreground aria-checked:shadow-sm">
+                <span class="h-2 w-2 rounded-full" style="background:hsl(43 96% 50%)"></span> JavaScript
+              </button>
+              <button type="button" role="radio" data-language="java" aria-checked="false"
+                class="flex h-9 items-center justify-center gap-2 rounded-md text-sm font-medium text-muted-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lang aria-checked:bg-card aria-checked:text-foreground aria-checked:shadow-sm">
+                <span class="h-2 w-2 rounded-full" style="background:hsl(212 82% 52%)"></span> Java
+              </button>
+            </div>
+            <p class="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+              <i data-lucide="info" class="mt-0.5 h-3.5 w-3.5 shrink-0"></i>
+              <span id="language-hint"></span>
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <label for="algorithm" class="text-sm font-medium">Algoritmo</label>
+            <div class="relative">
+              <select id="algorithm" name="algorithm"
+                class="h-10 w-full appearance-none rounded-md border border-input bg-background pl-3 pr-9 text-sm shadow-sm focus-visible:border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lang">
+                <option value="prime">Verificar número primo</option>
+                <option value="sum">Somatório</option>
+                <option value="fibonacci">Sequência de Fibonacci</option>
+                <option value="gcd">Máximo divisor comum</option>
+                <option value="quicksort">Ordenação Quicksort</option>
+                <option value="count">Contagem</option>
+              </select>
+              <i data-lucide="chevrons-up-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"></i>
+            </div>
+            <p id="algorithm-hint" class="text-xs leading-relaxed text-muted-foreground"></p>
+          </div>
+
+          <div class="h-px bg-border"></div>
+
+          <div id="inputs" class="space-y-4"></div>
+
+          <button type="submit"
+            class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-foreground px-4 text-sm font-medium text-background shadow transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lang focus-visible:ring-offset-2 focus-visible:ring-offset-card active:scale-[0.99]">
+            <i data-lucide="play" class="h-4 w-4"></i> Executar algoritmo
+          </button>
+        </div>
       </form>
 
-      <section class="panel result-panel" aria-live="polite">
-        <h2>Resultado <span class="status" id="status">Aguardando</span></h2>
-        <p class="panel-subtitle">A saída da última execução aparece abaixo.</p>
-        <div id="result">Selecione um algoritmo e execute para começar.</div>
-        <p class="footer-note">Entrada de listas: use números separados por vírgula.</p>
-      </section>
-    </section>
+      <!-- Resultado e histórico -->
+      <div class="min-w-0 space-y-6">
+        <section class="rounded-xl border border-border bg-card shadow-sm" aria-live="polite">
+          <div class="flex flex-wrap items-start justify-between gap-3 border-b border-border p-6">
+            <div class="min-w-0 space-y-1.5">
+              <h2 class="flex items-center gap-2.5 text-base font-semibold tracking-tight">
+                Resultado
+                <span id="status" class="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Aguardando</span>
+              </h2>
+              <p id="result-meta" class="text-sm text-muted-foreground">A saída da última execução aparece aqui.</p>
+            </div>
+            <button id="copy" type="button" hidden
+              class="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-background px-3 text-xs font-medium shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lang">
+              <i data-lucide="copy" class="h-3.5 w-3.5"></i> Copiar
+            </button>
+          </div>
+          <div id="result" class="min-h-[300px] p-6"></div>
+        </section>
+
+        <section class="rounded-xl border border-border bg-card shadow-sm">
+          <div class="flex items-center justify-between gap-3 border-b border-border px-6 py-4">
+            <h2 class="text-base font-semibold tracking-tight">Histórico</h2>
+            <button id="clear-history" type="button" hidden
+              class="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lang">
+              <i data-lucide="trash-2" class="h-3.5 w-3.5"></i> Limpar
+            </button>
+          </div>
+          <ul id="history" class="divide-y divide-border"></ul>
+        </section>
+      </div>
+    </div>
   </main>
+
+  <div id="toast" role="status" class="pointer-events-none fixed bottom-6 left-1/2 z-30 -translate-x-1/2 translate-y-2 rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background opacity-0 shadow-lg transition-all duration-200"></div>
 
   <script src="javascript/algoritmos.js"></script>
   <script>
-    const form = document.querySelector("#algorithm-form");
-    const algorithm = document.querySelector("#algorithm");
-    const inputs = document.querySelector("#inputs");
-    const result = document.querySelector("#result");
-    const status = document.querySelector("#status");
+    (() => {
+      const root = document.documentElement;
+      const $ = (selector) => document.querySelector(selector);
 
-    const inputTemplates = {
-      prime: '<div class="field"><label for="number">Número</label><input id="number" type="number" step="1" required value="29"></div>',
-      sum: '<div class="field"><label for="numbers">Números</label><input id="numbers" type="text" required value="10, 20, 30, 40, 50"><p class="hint">Exemplo: 10, 20, 30</p></div>',
-      fibonacci: '<div class="field"><label for="number">Posição (n)</label><input id="number" type="number" min="0" step="1" required value="10"></div>',
-      gcd: '<div class="field-row"><div class="field"><label for="first">Primeiro número</label><input id="first" type="number" step="1" required value="48"></div><div class="field"><label for="second">Segundo número</label><input id="second" type="number" step="1" required value="18"></div></div>',
-      quicksort: '<div class="field"><label for="numbers">Números</label><input id="numbers" type="text" required value="5, 3, 8, 1, 9, 2, 7"><p class="hint">Exemplo: 5, 3, 8, 1</p></div>',
-      count: '<div class="field"><label for="numbers">Números</label><input id="numbers" type="text" required value="3, 5, 1, 8, 4, 2, 6, 7"><p class="hint">A função conta os valores entre o primeiro número e o tamanho da lista.</p></div>'
-    };
+      const form = $("#algorithm-form");
+      const algorithmSelect = $("#algorithm");
+      const algorithmHint = $("#algorithm-hint");
+      const inputs = $("#inputs");
+      const result = $("#result");
+      const statusBadge = $("#status");
+      const resultMeta = $("#result-meta");
+      const copyButton = $("#copy");
+      const languageHint = $("#language-hint");
+      const history = $("#history");
+      const clearHistory = $("#clear-history");
+      const toast = $("#toast");
 
-    function parseNumbers(value) {
-      const numbers = value.split(",").map((item) => Number(item.trim()));
-      if (numbers.length === 0 || numbers.some((number) => !Number.isFinite(number))) {
-        throw new Error("Informe apenas números separados por vírgula.");
-      }
-      return numbers;
-    }
+      const state = { language: "javascript", lastText: "", entries: [] };
 
-    function renderInputs() {
-      inputs.innerHTML = inputTemplates[algorithm.value];
-      result.className = "";
-      result.textContent = "Preencha os dados e execute para ver o resultado.";
-      status.textContent = "Aguardando";
-    }
+      // ---------- Motores: cada linguagem expõe as mesmas operações ----------
+      const engines = {
+        javascript: {
+          name: "JavaScript",
+          hint: "Executa javascript/algoritmos.js com os números comuns do JavaScript, que perdem precisão a partir de F(79).",
+          ehPrimo,
+          somar,
+          fibonacciSequencia,
+          mdc,
+          quicksort: (numbers) => quicksort(numbers),
+          contar
+        },
+        // O Java roda de verdade: cada operação vira uma chamada ao servidor (java/Servidor.java),
+        // que executa o método correspondente de java/Algoritmos.java na JVM.
+        java: {
+          name: "Java",
+          hint: "Verificando o servidor Java…",
+          info: null,
+          ehPrimo: (n) => chamarJava("primo", { n }),
+          somar: (numbers) => chamarJava("soma", { numeros: numbers.join(",") }),
+          fibonacciSequencia: (n) => chamarJava("fibonacci", { n }),
+          mdc: (a, b) => chamarJava("mdc", { a, b }),
+          quicksort: (numbers) => chamarJava("quicksort", { numeros: numbers.join(",") }),
+          contar: (numbers) => chamarJava("contagem", { numeros: numbers.join(",") })
+        }
+      };
 
-    function execute(event) {
-      event.preventDefault();
-      result.className = "has-result";
+      // A página pode ser aberta por qualquer servidor (Live Server, arquivo local); o Java fica sempre aqui.
+      const JAVA_URL = "http://localhost:8080";
+      const JAVA_OFFLINE = "Servidor Java indisponível. Inicie-o com ./executar.sh dentro da pasta projeto_1.";
 
-      try {
-        let output;
+      async function chamarJava(algoritmo, parametros) {
+        let resposta;
+        let corpo;
 
-        switch (algorithm.value) {
-          case "prime":
-            output = Number(document.querySelector("#number").value);
-            output = `${output} ${ehPrimo(output) ? "é" : "não é"} primo.`;
-            break;
-          case "sum":
-            output = `Soma = ${somar(parseNumbers(document.querySelector("#numbers").value))}`;
-            break;
-          case "fibonacci":
-            output = `Fibonacci(${document.querySelector("#number").value}) = ${fibonacci(Number(document.querySelector("#number").value))}`;
-            break;
-          case "gcd":
-            output = `MDC = ${mdc(Number(document.querySelector("#first").value), Number(document.querySelector("#second").value))}`;
-            break;
-          case "quicksort":
-            output = `Lista ordenada: [${quicksort(parseNumbers(document.querySelector("#numbers").value)).join(", ")}]`;
-            break;
-          case "count":
-            output = `Quantidade encontrada = ${contar(parseNumbers(document.querySelector("#numbers").value))}`;
-            break;
-          default:
-            throw new Error("Algoritmo não encontrado.");
+        try {
+          resposta = await fetch(`${JAVA_URL}/api/executar?${new URLSearchParams({ algoritmo, ...parametros })}`);
+          corpo = await resposta.json();
+        } catch (error) {
+          throw new Error(JAVA_OFFLINE);
         }
 
-        result.textContent = output;
-        status.textContent = "Concluído";
-      } catch (error) {
-        result.className = "has-result error";
-        result.textContent = error.message;
-        status.textContent = "Verifique os dados";
-      }
-    }
+        if (!resposta.ok) {
+          throw new Error(corpo.erro);
+        }
 
-    algorithm.addEventListener("change", renderInputs);
-    form.addEventListener("submit", execute);
-    renderInputs();
+        engines.java.info = { versao: corpo.versao, tempoMs: corpo.tempoMs };
+        return corpo.resultado;
+      }
+
+      async function verificarJava() {
+        try {
+          const resposta = await fetch(`${JAVA_URL}/api/status`);
+          const { versao } = await resposta.json();
+          engines.java.hint = `Executa java/Algoritmos.java de verdade, na JVM ${versao}, pelo servidor local. O int de 32 bits estoura a partir de F(47).`;
+        } catch (error) {
+          engines.java.hint = JAVA_OFFLINE;
+        }
+
+        if (state.language === "java") {
+          languageHint.textContent = engines.java.hint;
+        }
+      }
+
+      // ---------- Utilidades ----------
+      function parseNumbers(value) {
+        const parts = value.split(",").map((item) => item.trim());
+        const numbers = parts.map((item) => (item === "" ? NaN : Number(item)));
+        if (numbers.some((number) => !Number.isFinite(number))) {
+          throw new Error("Informe apenas números separados por vírgula, sem itens vazios.");
+        }
+        return numbers;
+      }
+
+      function exactFibonacci(n) {
+        const terms = [];
+        let a = 0n;
+        let b = 1n;
+        for (let i = 0; i <= n; i++) {
+          terms.push(a);
+          [a, b] = [b, a + b];
+        }
+        return terms;
+      }
+
+      const formatMs = (ms) => `${ms.toFixed(2).replace(".", ",")} ms`;
+
+      function refreshIcons() {
+        lucide.createIcons();
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.remove("opacity-0", "translate-y-2");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.add("opacity-0", "translate-y-2"), 1600);
+      }
+
+      // ---------- Algoritmos disponíveis na interface ----------
+      const algorithms = {
+        prime: {
+          name: "Número primo",
+          hint: "Testa divisores de 2 até a raiz quadrada do número.",
+          fields: [{ id: "number", label: "Número", kind: "int", value: 29 }],
+          async run(engine, v) {
+            const ok = await engine.ehPrimo(v.number);
+            const detail = v.number < 2
+              ? "Números menores que 2 não são primos."
+              : ok
+                ? "Nenhum divisor entre 2 e a raiz quadrada do número."
+                : "Tem ao menos um divisor além de 1 e dele mesmo.";
+            const headline = `${v.number} ${ok ? "é" : "não é"} primo`;
+            return { kind: "verdict", ok, headline, detail, input: `n = ${v.number}`, summary: headline, text: headline };
+          }
+        },
+        sum: {
+          name: "Somatório",
+          hint: "Percorre a lista acumulando cada valor.",
+          fields: [{ id: "numbers", label: "Números", kind: "list", value: "10, 20, 30, 40, 50", hint: "Separe os valores por vírgula." }],
+          async run(engine, v) {
+            const total = await engine.somar(v.numbers);
+            return {
+              kind: "stat", label: "Soma", value: total,
+              detail: `${v.numbers.length} ${v.numbers.length === 1 ? "valor somado" : "valores somados"}.`,
+              input: `[${v.numbers.join(", ")}]`, summary: `Soma = ${total}`, text: `Soma = ${total}`
+            };
+          }
+        },
+        fibonacci: {
+          name: "Sequência de Fibonacci",
+          hint: "Lista todos os termos, de F(0) até F(n).",
+          fields: [{ id: "number", label: "Até a posição (n)", kind: "int", min: 0, max: 300, value: 10, hint: "Inteiro entre 0 e 300." }],
+          async run(engine, v) {
+            const sequence = await engine.fibonacciSequencia(v.number);
+            const exact = exactFibonacci(v.number);
+            const items = sequence.map((value, index) => ({
+              label: `F${index}`,
+              value,
+              flag: BigInt(value) !== exact[index]
+            }));
+            const firstFlagged = items.findIndex((item) => item.flag);
+            const flagged = firstFlagged === -1 ? 0 : items.length - firstFlagged;
+            const note = firstFlagged === -1 ? "" : engine === engines.java
+              ? `Os termos em vermelho estouraram o int de 32 bits, a partir de F(${firstFlagged}). O valor mostrado é o que a JVM calculou.`
+              : `Os termos em vermelho perderam precisão (limite dos números do JavaScript), a partir de F(${firstFlagged}).`;
+            const last = sequence[sequence.length - 1];
+            return {
+              kind: "groups",
+              stats: [
+                { label: "Termos", value: sequence.length },
+                { label: `F(${v.number})`, value: last },
+                { label: "Fora do esperado", value: flagged, warn: flagged > 0 }
+              ],
+              groups: [{ title: `F(0) até F(${v.number})`, items }],
+              note,
+              input: `n = ${v.number}`,
+              summary: `${sequence.length} termos, F(${v.number}) = ${last}`,
+              text: sequence.join(", ")
+            };
+          }
+        },
+        gcd: {
+          name: "Máximo divisor comum",
+          hint: "Algoritmo de Euclides com restos sucessivos.",
+          fields: [
+            { id: "first", label: "Primeiro número", kind: "int", value: 48 },
+            { id: "second", label: "Segundo número", kind: "int", value: 18 }
+          ],
+          async run(engine, v) {
+            const value = await engine.mdc(v.first, v.second);
+            return {
+              kind: "stat", label: `MDC(${v.first}, ${v.second})`, value,
+              detail: "Maior inteiro que divide os dois números sem deixar resto.",
+              input: `${v.first} e ${v.second}`, summary: `MDC(${v.first}, ${v.second}) = ${value}`, text: `MDC(${v.first}, ${v.second}) = ${value}`
+            };
+          }
+        },
+        quicksort: {
+          name: "Quicksort",
+          hint: "Ordena em ordem crescente usando o último elemento como pivô.",
+          fields: [{ id: "numbers", label: "Números", kind: "list", value: "5, 3, 8, 1, 9, 2, 7", hint: "Separe os valores por vírgula." }],
+          async run(engine, v) {
+            const sorted = await engine.quicksort(v.numbers);
+            return {
+              kind: "groups",
+              groups: [
+                { title: "Entrada", items: v.numbers.map((value, index) => ({ label: `#${index}`, value })) },
+                { title: "Ordenada", items: sorted.map((value, index) => ({ label: `#${index}`, value })) }
+              ],
+              input: `${v.numbers.length} valores`,
+              summary: `[${sorted.join(", ")}]`,
+              text: sorted.join(", ")
+            };
+          }
+        },
+        count: {
+          name: "Contagem",
+          hint: "Conta os valores entre o primeiro número e o tamanho da lista.",
+          fields: [{ id: "numbers", label: "Números", kind: "list", value: "3, 5, 1, 8, 4, 2, 6, 7", hint: "O intervalo vai do primeiro número ao tamanho da lista." }],
+          async run(engine, v) {
+            const total = await engine.contar(v.numbers);
+            const n = v.numbers.length;
+            const first = v.numbers[0];
+            const [min, max] = first < n ? [first, n] : [n, first];
+            return {
+              kind: "stat", label: "Quantidade encontrada", value: total,
+              detail: `Valores entre ${min} e ${max} (inclusive), com N = ${n}.`,
+              input: `[${v.numbers.join(", ")}]`, summary: `${total} entre ${min} e ${max}`, text: `Quantidade = ${total}`
+            };
+          }
+        }
+      };
+
+      // ---------- Entradas ----------
+      const inputClass = "h-10 w-full rounded-md border border-input bg-background px-3 font-mono text-sm shadow-sm placeholder:text-muted-foreground focus-visible:border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lang";
+
+      function fieldMarkup(field) {
+        const attrs = field.kind === "int"
+          ? `type="number" step="1" inputmode="numeric"${field.min !== undefined ? ` min="${field.min}"` : ""}${field.max !== undefined ? ` max="${field.max}"` : ""}`
+          : `type="text" inputmode="text" autocomplete="off" spellcheck="false"`;
+        return `
+          <div class="space-y-2">
+            <label for="${field.id}" class="text-sm font-medium">${field.label}</label>
+            <input id="${field.id}" class="${inputClass}" ${attrs} value="${field.value}" required>
+            ${field.hint ? `<p class="text-xs text-muted-foreground">${field.hint}</p>` : ""}
+          </div>`;
+      }
+
+      function renderInputs() {
+        const algorithm = algorithms[algorithmSelect.value];
+        inputs.className = algorithm.fields.length > 1 ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2" : "space-y-4";
+        inputs.innerHTML = algorithm.fields.map(fieldMarkup).join("");
+        algorithmHint.textContent = algorithm.hint;
+      }
+
+      function readValues(algorithm) {
+        const values = {};
+        for (const field of algorithm.fields) {
+          const raw = $(`#${field.id}`).value;
+          if (field.kind === "list") {
+            values[field.id] = parseNumbers(raw);
+            continue;
+          }
+          const number = Number(raw);
+          if (raw.trim() === "" || !Number.isInteger(number)) {
+            throw new Error(`“${field.label}” precisa ser um número inteiro.`);
+          }
+          if ((field.min !== undefined && number < field.min) || (field.max !== undefined && number > field.max)) {
+            throw new Error(`“${field.label}” deve estar entre ${field.min} e ${field.max}.`);
+          }
+          values[field.id] = number;
+        }
+        return values;
+      }
+
+      // ---------- Renderização do resultado ----------
+      function chipMarkup(item, index) {
+        const delay = Math.min(index * 18, 540);
+        const tone = item.flag
+          ? "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400"
+          : "border-border bg-background";
+        const title = item.flag ? ' title="Valor fora do esperado para esta linguagem"' : "";
+        return `
+          <li class="chip-in flex min-w-[3.25rem] flex-col rounded-md border px-2.5 py-1.5 font-mono ${tone}" style="animation-delay:${delay}ms"${title}>
+            <span class="text-[10px] leading-none ${item.flag ? "opacity-80" : "text-muted-foreground"}">${item.label}</span>
+            <span class="mt-1 text-sm font-medium tabular-nums">${item.value}</span>
+          </li>`;
+      }
+
+      function resultMarkup(data) {
+        if (data.kind === "stat") {
+          return `
+            <div class="flex flex-col gap-3 py-4">
+              <span class="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">${data.label}</span>
+              <span class="break-all font-mono text-6xl font-semibold leading-none tracking-tight tabular-nums sm:text-7xl">${data.value}</span>
+              <p class="max-w-md text-sm text-muted-foreground">${data.detail}</p>
+            </div>`;
+        }
+
+        if (data.kind === "verdict") {
+          const tone = data.ok
+            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            : "bg-red-500/10 text-red-600 dark:text-red-400";
+          return `
+            <div class="flex items-start gap-4 py-4">
+              <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full ${tone}">
+                <i data-lucide="${data.ok ? "check" : "x"}" class="h-6 w-6"></i>
+              </span>
+              <div class="space-y-1.5">
+                <p class="font-mono text-3xl font-semibold tracking-tight">${data.headline}</p>
+                <p class="text-sm text-muted-foreground">${data.detail}</p>
+              </div>
+            </div>`;
+        }
+
+        const stats = (data.stats || []).map((stat) => `
+          <div class="min-w-0 rounded-lg border border-border bg-background px-4 py-3">
+            <p class="text-xs text-muted-foreground">${stat.label}</p>
+            <p class="mt-1 truncate font-mono text-lg font-semibold tabular-nums ${stat.warn ? "text-red-600 dark:text-red-400" : ""}" title="${stat.value}">${stat.value}</p>
+          </div>`).join("");
+
+        const groups = data.groups.map((group) => `
+          <div class="space-y-3">
+            <h3 class="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">${group.title}</h3>
+            <ul class="flex flex-wrap gap-2">${group.items.map(chipMarkup).join("")}</ul>
+          </div>`).join("");
+
+        const note = data.note ? `
+          <div class="flex items-start gap-2.5 rounded-lg border border-red-500/30 bg-red-500/10 p-3.5 text-sm text-red-700 dark:text-red-300">
+            <i data-lucide="triangle-alert" class="mt-0.5 h-4 w-4 shrink-0"></i>
+            <p>${data.note}</p>
+          </div>` : "";
+
+        return `
+          <div class="space-y-6">
+            ${stats ? `<div class="grid gap-3 sm:grid-cols-3">${stats}</div>` : ""}
+            ${groups}
+            ${note}
+          </div>`;
+      }
+
+      function emptyMarkup() {
+        return `
+          <div class="grid min-h-[250px] place-items-center text-center">
+            <div class="max-w-xs space-y-3">
+              <span class="mx-auto grid h-11 w-11 place-items-center rounded-full border border-dashed border-input text-muted-foreground">
+                <i data-lucide="terminal" class="h-5 w-5"></i>
+              </span>
+              <p class="text-sm font-medium">Nenhuma execução ainda</p>
+              <p class="text-sm text-muted-foreground">Preencha os dados e clique em “Executar algoritmo”.</p>
+            </div>
+          </div>`;
+      }
+
+      function setStatus(kind, label) {
+        const tones = {
+          idle: "border-border bg-muted text-muted-foreground",
+          ok: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+          error: "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400"
+        };
+        statusBadge.className = `inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${tones[kind]}`;
+        statusBadge.textContent = label;
+      }
+
+      function resetResult() {
+        result.innerHTML = emptyMarkup();
+        resultMeta.textContent = "A saída da última execução aparece aqui.";
+        setStatus("idle", "Aguardando");
+        copyButton.hidden = true;
+        state.lastText = "";
+        refreshIcons();
+      }
+
+      // ---------- Histórico ----------
+      function renderHistory() {
+        clearHistory.hidden = state.entries.length === 0;
+
+        if (state.entries.length === 0) {
+          history.innerHTML = '<li class="px-6 py-8 text-center text-sm text-muted-foreground">As execuções desta sessão aparecem aqui.</li>';
+          return;
+        }
+
+        history.innerHTML = state.entries.map((entry) => `
+          <li class="flex items-center gap-3 px-6 py-3.5">
+            <span class="h-2 w-2 shrink-0 rounded-full" style="background:${entry.color}"></span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium">${entry.algorithm} <span class="font-normal text-muted-foreground">· ${entry.language}</span></p>
+              <p class="truncate font-mono text-xs text-muted-foreground">${entry.input} → ${entry.summary}</p>
+            </div>
+            <span class="shrink-0 font-mono text-xs text-muted-foreground">${entry.time}</span>
+          </li>`).join("");
+      }
+
+      function addHistory(engine, algorithm, data) {
+        state.entries.unshift({
+          algorithm: algorithm.name,
+          language: engine.name,
+          color: engine === engines.java ? "hsl(212 82% 52%)" : "hsl(43 96% 50%)",
+          input: data.input,
+          summary: data.summary,
+          time: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+        });
+        state.entries = state.entries.slice(0, 8);
+        renderHistory();
+      }
+
+      // ---------- Execução ----------
+      async function execute(event) {
+        event.preventDefault();
+        const engine = engines[state.language];
+        const algorithm = algorithms[algorithmSelect.value];
+
+        try {
+          const values = readValues(algorithm);
+          const started = performance.now();
+          engine.info = null;
+          const data = await algorithm.run(engine, values);
+          const elapsed = performance.now() - started;
+
+          result.innerHTML = resultMarkup(data);
+          const tempo = engine.info
+            ? `${formatMs(engine.info.tempoMs)} na JVM ${engine.info.versao}`
+            : formatMs(elapsed);
+          resultMeta.textContent = `${algorithm.name} · ${engine.name} · ${data.input} · ${tempo}`;
+          setStatus("ok", "Concluído");
+          state.lastText = data.text;
+          copyButton.hidden = false;
+          addHistory(engine, algorithm, data);
+        } catch (error) {
+          result.innerHTML = `
+            <div class="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-700 dark:text-red-300">
+              <i data-lucide="circle-alert" class="mt-0.5 h-5 w-5 shrink-0"></i>
+              <div class="space-y-1">
+                <p class="text-sm font-medium">Não foi possível executar</p>
+                <p class="text-sm" id="error-message"></p>
+              </div>
+            </div>`;
+          $("#error-message").textContent = error.message;
+          resultMeta.textContent = `${algorithm.name} · ${engine.name}`;
+          setStatus("error", error.message === JAVA_OFFLINE ? "Servidor offline" : "Verifique os dados");
+          copyButton.hidden = true;
+        }
+
+        refreshIcons();
+      }
+
+      // ---------- Linguagem e tema ----------
+      function setLanguage(language) {
+        state.language = language;
+        root.dataset.lang = language;
+        document.querySelectorAll("[data-language]").forEach((button) => {
+          button.setAttribute("aria-checked", String(button.dataset.language === language));
+        });
+        languageHint.textContent = engines[language].hint;
+        if (language === "java") {
+          verificarJava();
+        }
+        resetResult();
+      }
+
+      document.querySelectorAll("[data-language]").forEach((button) => {
+        button.addEventListener("click", () => setLanguage(button.dataset.language));
+      });
+
+      $("#theme-toggle").addEventListener("click", () => {
+        const dark = root.classList.toggle("dark");
+        try {
+          localStorage.setItem("theme", dark ? "dark" : "light");
+        } catch (error) {
+          // Sem armazenamento: o tema vale só para esta sessão.
+        }
+      });
+
+      copyButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(state.lastText);
+          showToast("Resultado copiado");
+        } catch (error) {
+          showToast("Não foi possível copiar");
+        }
+      });
+
+      clearHistory.addEventListener("click", () => {
+        state.entries = [];
+        renderHistory();
+      });
+
+      algorithmSelect.addEventListener("change", () => {
+        renderInputs();
+        resetResult();
+        refreshIcons();
+      });
+      form.addEventListener("submit", execute);
+
+      renderInputs();
+      setLanguage("javascript");
+      renderHistory();
+      refreshIcons();
+      verificarJava();
+    })();
   </script>
 </body>
 </html>
